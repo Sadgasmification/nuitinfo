@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Place Searches</title>
+    <link rel="stylesheet" type="text/css" href="maps.css" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <div id="main">
+        <div id="map"></div>
+        <div id="right_panel">
+          <span>Latitude de la balise: </span><span id="span_lat"></span></br>
+          <span>Longitude de la balise: </span><span id="span_long"></span></br>
+          <button id="btn_reset" type="button">Poser une nouvelle balise</button>
+        </div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnAJnW18q2qI8qEfn5eZ40gl1PWqhkoKo&libraries=geometry,places&callback=initMap" async defer></script>
+  </body>
+</html>
+
+<script>
+
+  map;
+  myPlace = null;
+  isRight = new Object();
+  tryRemaining = 4;
+
+  
+  function initMap() {
+    var start = {lat: 50.105129, lng: 3.635612};
+
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: start,
+      zoom: 15
+    });
+
+    google.maps.event.addListener(map, 'click', function(event) {
+      if (myPlace == null) {
+        chooseMyPlace(event.latLng.toString().replace(/[{( )}]/g, '').split(','));
+        addMarker(event.latLng);
+      } else {
+        verifConnexion(event.latLng.toString().replace(/[{( )}]/g, '').split(','));
+      }
+    });
+  }
+
+  function addMarker(location) {
+        marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+    }
+
+
+    function showPos(lat, long){
+      document.getElementById('span_lat').innerHTML = lat;
+      document.getElementById('span_long').innerHTML = long;
+    }
+
+    function reset(){
+      myPlace = null;
+      tryRemaining = 4;
+      document.getElementById('span_lat').innerHTML = "";
+      document.getElementById('span_long').innerHTML = "";
+      initMap();
+    }
+
+  function chooseMyPlace(coor) {
+    myPlace = new Object();
+    var lat = coor[0];
+    var lon = coor[1];
+      myPlace["lat"] = parseFloat(lat);
+      myPlace["lon"] = parseFloat(lon);
+      myPlace["latMin"] = parseFloat(lat) - 0.0030;
+      myPlace["latMax"] = parseFloat(lat) + 0.0030;
+      myPlace["lonMin"] = parseFloat(lon) - 0.0030;
+      myPlace["lonMax"] = parseFloat(lon) + 0.0030;
+      showPos(lat, lon);
+      console.log(myPlace)
+  }
+
+  function verifConnexion(coor) {
+    var lat = parseFloat(coor[0])
+    var lon = parseFloat(coor[1])
+    if (lat <= myPlace["latMax"] && lat >= myPlace["latMin"] && lon <= myPlace["lonMax"] && lon >= myPlace["lonMin"]) {
+      alert('Connexion réussie')
+    } else if (tryRemaining > 0) {
+      alert('Connexion échouée, il vous reste ' + tryRemaining + ' essai(s)')
+      tryRemaining--
+    } else {
+      alert('Compte bloqué')
+    }
+  }
+
+  var bouton = document.getElementById('btn_reset');
+  bouton.onclick = reset;
+</script>
